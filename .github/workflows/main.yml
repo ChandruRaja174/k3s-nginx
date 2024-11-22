@@ -1,0 +1,23 @@
+name: Deploy to k3s Cluster
+
+on:
+  push:
+    branches:
+      - main  # Trigger the pipeline when pushing to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Kubernetes
+      uses: azure/setup-kubectl@v1
+      with:
+        kubeconfig: ${{ secrets.KUBECONFIG }}  # Store kubeconfig as GitHub secret
+
+    - name: Apply Kubernetes Manifest
+      run: |
+        kubectl apply -f deployment.yml
