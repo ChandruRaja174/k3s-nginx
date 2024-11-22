@@ -1,23 +1,33 @@
-name: Deploy to k3s Cluster
+name: Deploy to k3s
 
 on:
   push:
     branches:
-      - main  # Trigger the pipeline when pushing to the main branch
+      - main  # Trigger workflow when code is pushed to the 'main' branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+    # Step 1: Checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-    - name: Set up Kubernetes
-      uses: azure/setup-kubectl@v1
+    # Step 2: Set up kubectl
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
       with:
-        kubeconfig: ${{ secrets.KUBECONFIG }}  # Store kubeconfig as GitHub secret
+        version: 'v1.27.0' # Specify a compatible kubectl version for your k3s cluster
 
-    - name: Apply Kubernetes Manifest
+    # Step 3: Set up kubeconfig for k3s
+    - name: Configure kubeconfig
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+        chmod 600 ~/.kube/config
+
+    # Step 4: Apply Kubernetes manifests
+    - name: Deploy to k3s cluster
       run: |
         kubectl apply -f deployment.yml
